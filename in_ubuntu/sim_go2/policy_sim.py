@@ -18,8 +18,8 @@ import omni.kit.commands
 from isaacsim.core.utils.rotations import quat_to_rot_matrix,quat_to_euler_angles
 from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.storage.native import get_assets_root_path
-from tra_spline_sim import CubicSpline
-from tra_planner_sim import LinearLocalPlanner
+from tra_spline import CubicSpline
+from tra_planner import LinearLocalPlanner
 from policy_controller import PolicyController
 
 class Go2FlatTerrainPolicy(PolicyController):
@@ -90,8 +90,6 @@ class Go2FlatTerrainPolicy(PolicyController):
         ang_vel_I = self.robot.get_angular_velocity()
         pos_IB, q_IB = self.robot.get_world_pose()
         R_IB = quat_to_rot_matrix(q_IB)
-        euler_angle = quat_to_euler_angles(q_IB)
-        cur_yaw = euler_angle[2]
         R_BI = R_IB.transpose()
         lin_vel_b = np.matmul(R_BI, lin_vel_I)
         ang_vel_b = np.matmul(R_BI, ang_vel_I)
@@ -109,10 +107,9 @@ class Go2FlatTerrainPolicy(PolicyController):
         2: set the command directly
             obs[9:12]=[1,0,0]
         3: use the planner to send the command
-            self.llp.update_position(np.array(pos_IB[0],pos_IB[1]))
-            direction = self.llp.get_control_target(np.array(pos_IB[0],pos_IB[1]))
-            R_BI_inverse = np.linalg.inv(R_IB)
-            dir_body = np.matmul(R_IB, np.append(direction, [0]))
+            self.llp.update_position(np.array([pos_IB[0],pos_IB[1])])
+            direction = self.llp.get_control_target(np.array([pos_IB[0],pos_IB[1])])
+            dir_body = np.matmul(R_BI, np.append(direction, [0]))
             command_vx = np.clip(self.weight[0]*dir_body[0], -1, 1)
             command_vy = np.clip(self.weight[1]*dir_body[1], -1, 1)
             obs[9:12] = [command_vx,command_vy,0]

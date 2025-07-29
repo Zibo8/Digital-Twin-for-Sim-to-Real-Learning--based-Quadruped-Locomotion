@@ -172,6 +172,8 @@ class Custom:
         self.obs[0:3]=vel_body
         self.obs[3:6] = msg.imu_state.gyroscope
         self.obs[6:9] = gravity_b
+        # 1: constant command: self.obs[9:12] = [0.6,0,0]
+        # 2: path planner command: self.obs[9:12] = self.redis.command
         if self.counter < (self.duration_2-20):
             self.obs[9:12] = [0.6,0,0]
         else:
